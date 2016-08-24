@@ -1,0 +1,97 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+	<title>
+		LABRECON
+	</title>
+	<script type='text/javascript'>
+		window.onload = setEL;
+		function serialWrite(text){
+			req = 'serial/'+text
+			request = new XMLHttpRequest();
+			request.onreadystatechange = function(){
+				if ((request.readyState == 4) && (request.status == 200)){
+					document.getElementById('status').innerHTML = request.responseText;
+				}
+			}
+			request.open("POST", req, true);
+			request.send(null);
+		}
+		function buttonPress(pin,action){
+			server = 'digital/'+pin+'/'+action;
+			request = new XMLHttpRequest();
+			request.onreadystatechange = buttonUpdate;
+			request.open("POST", server, true);
+			request.send(null);
+		}
+		function buttonUpdate(){
+			if ((request.readyState == 4) && (request.status == 200)){
+				result = request.responseText;
+				console.log(result);
+				document.getElementById("status").innerHTML = result;
+				singleset = result.split(",");
+				PinType = singleset[0];
+				PinNum = singleset[1];
+				Pinstatus = singleset[2];
+				ActNum = "action" + PinNum;
+				TxtNum = "text" + PinNum;
+				if (Pinstatus == 0){
+					PinAct = "1";
+					text = "Off";
+				}
+				else{
+					PinAct = "0";
+					text = "On";
+				}
+				console.log(PinAct);
+				console.log(text);
+				document.getElementById(ActNum).value = PinAct;
+				document.getElementById(TxtNum).innerHTML = text;
+				document.getElementById("description").innerHTML = result;
+			}
+		}
+		function setEL(){
+			document.getElementById('serial0').addEventListener('keypress', function (e) {
+	    		var key = e.which || e.keyCode;
+	    		if (key === 13) {
+	      			document.getElementById('serialB1').click();
+	      			document.getElementById('serial0').value = "";
+	    		}
+			});
+		}
+	</script>
+	<style type="text/css">
+		.centered{
+			text-align: center;
+			font-family: sans-serif;
+		}
+	</style>
+</head>
+<body>
+	<div class='centered'>
+		<h1>LABRECON ESP8266</h1>
+		<table style='margin: auto;'border="1" cellpadding="6">
+			<tr><th>Send Data</th></tr>
+			<tr>
+				<td>
+					<input id="serial0" value="">
+					<button id="serialB1" onclick="serialWrite(document.getElementById('serial0').value);"/>Send</button>
+				</td>
+			</tr>
+			<tr><th>Digital Write</th></tr>
+			<tr>
+				<td>
+					<input type="hidden" name="pin" value="12" id="pin12" />
+					<input type="hidden" name="action" value="1" id="action12" />
+					<button onclick="buttonPress(document.getElementById('pin12').value,document.getElementById('action12').value);"/>GPIO 12</button>
+					<p id="text12">Off</p>
+				</td>
+			</tr>
+			<tr>
+				<td id='status'><br></td>
+			</tr>
+		</table>
+		<br>
+	</div>
+</body>
+</html>
